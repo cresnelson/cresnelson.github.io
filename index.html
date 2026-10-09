@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SVO Craft — Minecraft сервер про войну</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  /* ========== Переменные тем ========== */
+  :root {
+    --bg: #0c0f16;
+    --bg-2: #141a27;
+    --bg-3: #1b2233;
+    --surface: #1a2235;
+    --surface-2: #222c45;
+    --text: #e6ecff;
+    --text-dim: #9aa7c7;
+    --accent: #2450c7;       /* тёмно-синий */
+    --accent-2: #3a6df0;
+    --gold: #a17a1f;         /* тёмно-золотистый */
+    --gold-2: #d4a72c;
+    --border: #2a3450;
+    --danger: #c94d4d;
+    --success: #4dbd74;
+    --shadow: 0 10px 30px rgba(0, 0, 0, .5);
+    --radius: 10px;
+    --pixel: "Press Start 2P", monospace;
+    --sans: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  }
+
+  [data-theme="light"] {
+    --bg: #eef1f8;
+    --bg-2: #dde3f1;
+    --bg-3: #cfd6e8;
+    --surface: #ffffff;
+    --surface-2: #f2f5fc;
+    --text: #141a2a;
+    --text-dim: #52617f;
+    --accent: #1d3fa1;
+    --accent-2: #2f5ad0;
+    --gold: #8a6713;
+    --gold-2: #b7881a;
+    --border: #c3cde2;
+    --shadow: 0 10px 24px rgba(20, 26, 42, .12);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(1200px 600px at 10% -10%, rgba(36, 80, 199, .25), transparent 60%),
+      radial-gradient(900px 500px at 100% 10%, rgba(161, 122, 31, .18), transparent 60%),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><rect width='40' height='40' fill='none'/><rect x='0' y='0' width='2' height='2' fill='%23ffffff' opacity='0.03'/><rect x='20' y='20' width='2' height='2' fill='%23ffffff' opacity='0.03'/></svg>");
+    background-attachment: fixed;
+    transition: background .3s ease, color .3s ease;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  .container {
+    width: min(1200px, 92%);
+    margin: 0 auto;
+  }
+
+  /* ========== Шапка ========== */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(10px);
+    background: color-mix(in srgb, var(--bg) 75%, transparent);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    gap: 16px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--pixel);
+    font-size: 14px;
+    letter-spacing: 1px;
+  }
+  .brand-logo {
+    width: 40px; height: 40px;
+    image-rendering: pixelated;
+    background:
+      linear-gradient(135deg, var(--accent), var(--gold)) border-box;
+    border: 3px solid var(--gold);
+    border-radius: 4px;
+    box-shadow: inset 0 0 0 2px #000, 0 0 0 2px #000;
+    position: relative;
+    display: grid; place-items: center;
+    color: #fff;
+    font-weight: 900;
+    font-size: 18px;
+  }
+  .brand-name {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+  }
+  .brand-name small {
+    font-family: var(--sans);
+    font-weight: 600;
+    color: var(--text-dim);
+    font-size: 11px;
+    letter-spacing: .5px;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 26px;
+    align-items: center;
+    font-weight: 600;
+    color: var(--text-dim);
+  }
+  .nav-links a {
+    position: relative;
+    transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+  .nav-links a::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: -6px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent-2), var(--gold-2));
+    transform: scaleX(0);
+    transition: transform .2s ease;
+    transform-origin: left;
+  }
+  .nav-links a:hover::after { transform: scaleX(1); }
+
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .theme-toggle {
+    width: 42px; height: 42px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    display: grid; place-items: center;
+    transition: transform .2s, background .2s, border-color .2s;
+  }
+  .theme-toggle:hover { transform: translateY(-1px); border-color: var(--gold); }
+  .burger { display: none; }
+  .mobile-nav { display: none; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: var(--radius);
+    border: 2px solid transparent;
+    font-weight: 800;
+    font-family: var(--sans);
+    font-size: 15px;
+    letter-spacing: .2px;
+    cursor: pointer;
+    transition: transform .15s ease, box-shadow .2s ease, background .2s, color .2s, border-color .2s;
+    position: relative;
+    image-rendering: pixelated;
+  }
+  .btn:active { transform: translateY(1px); }
+
+  .btn-primary {
+    background: linear-gradient(180deg, var(--accent-2), var(--accent));
+    color: #fff;
+    border-color: #0b1740;
+    box-shadow: 0 6px 0 #0b1740, 0 10px 18px rgba(36, 80, 199, .35), inset 0 1px 0 rgba(255,255,255,.2);
+  }
+  .btn-primary:hover { filter: brightness(1.08); }
+  .btn-primary:active { box-shadow: 0 3px 0 #0b1740, 0 6px 12px rgba(36, 80, 199, .35), inset 0 1px 0 rgba(255,255,255,.2); }
+
+  .btn-gold {
+    background: linear-gradient(180deg, var(--gold-2), var(--gold));
+    color: #1a1204;
+    border-color: #3a2c07;
+    box-shadow: 0 6px 0 #3a2c07, 0 10px 18px rgba(161, 122, 31, .35), inset 0 1px 0 rgba(255,255,255,.25);
+  }
+  .btn-gold:hover { filter: brightness(1.08); }
+  .btn-gold:active { box-shadow: 0 3px 0 #3a2c07, 0 6px 12px rgba(161, 122, 31, .35), inset 0 1px 0 rgba(255,255,255,.25); }
+
+  .btn-ghost {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--text);
+  }
+  .btn-ghost:hover { border-color: var(--gold); color: var(--gold-2); }
+
+  /* ========== Hero ========== */
+  .hero {
+    padding: 80px 0 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 50px;
+    align-items: center;
+  }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--gold) 22%, transparent);
+    border: 1px solid var(--gold);
+    color: var(--gold-2);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .4px;
+    margin-bottom: 22px;
+  }
+  .tag .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 0 4px rgba(77, 189, 116, .2);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(77, 189, 116, .5); }
+    50% { box-shadow: 0 0 0 8px rgba(77, 189, 116, 0); }
+  }
+  h1.title {
+    font-family: var(--pixel);
+    font-size: clamp(22px, 4.2vw, 46px);
+    line-height: 1.25;
+    margin: 0 0 18px;
+    color: var(--text);
+    text-shadow: 3px 3px 0 #000, 6px 6px 0 rgba(36, 80, 199, .35);
+  }
+  h1.title .accent-gold {
+    background: linear-gradient(180deg, var(--gold-2), var(--gold));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: none;
+  }
+  h1.title .accent-blue {
+    background: linear-gradient(180deg, var(--accent-2), var(--accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: none;
+  }
+  .lead {
+    font-size: clamp(15px, 1.5vw, 18px);
+    color: var(--text-dim);
+    margin: 0 0 28px;
+    max-width: 560px;
+  }
+  .hero-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 30px;
+  }
+  .stats {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+  }
+  .stat .num {
+    font-family: var(--pixel);
+    font-size: 22px;
+    color: var(--gold-2);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .stat .label {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+  }
+
+  /* IP блок */
+  .ip-card {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .ip-card::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(135deg, var(--accent), transparent 40%, var(--gold));
+    z-index: -1;
+    filter: blur(0.5px);
+    opacity: .5;
+    border-radius: calc(var(--radius) + 2px);
+  }
+  .ip-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-dim);
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .ip-value {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+  }
+  .ip-value span {
+    font-family: var(--pixel);
+    font-size: clamp(11px, 1.4vw, 15px);
+    color: var(--text);
+    word-break: break-all;
+  }
+  .ip-copy {
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 12px;
+    transition: background .2s, border-color .2s;
+    white-space: nowrap;
+  }
+  .ip-copy:hover { border-color: var(--gold); color: var(--gold-2); }
+  .ip-note {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .chip {
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    background: color-mix(in srgb, var(--accent) 20%, transparent);
+    border: 1px solid var(--accent);
+    color: var(--accent-2);
+  }
+  .chip.gold {
+    background: color-mix(in srgb, var(--gold) 22%, transparent);
+    border-color: var(--gold);
+    color: var(--gold-2);
+  }
+
+  /* Арт с кубами */
+  .hero-art {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    max-width: 480px;
+    margin-left: auto;
+    display: grid;
+    place-items: center;
+  }
+  .mc-cube {
+    width: 70%;
+    aspect-ratio: 1;
+    position: relative;
+    transform: rotateX(-20deg) rotateZ(-35deg);
+    transform-style: preserve-3d;
+    animation: float 6s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: rotateX(-20deg) rotateZ(-35deg) translateY(0); }
+    50% { transform: rotateX(-20deg) rotateZ(-35deg) translateY(-12px); }
+  }
+  .face {
+    position: absolute;
+    inset: 0;
+    border: 4px solid #0a0f1c;
+    image-rendering: pixelated;
+    background:
+      linear-gradient(rgba(255,255,255,.08), rgba(0,0,0,.3)),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.12) 0 2px, transparent 2px 8px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.12) 0 2px, transparent 2px 8px),
+      linear-gradient(135deg, var(--accent-2), var(--accent));
+    filter: saturate(1.1);
+  }
+  .face.top {
+    transform: rotateX(90deg) translateZ(0px);
+    background:
+      linear-gradient(rgba(255,255,255,.22), rgba(255,255,255,.02)),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.08) 0 2px, transparent 2px 8px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.08) 0 2px, transparent 2px 8px),
+      linear-gradient(135deg, var(--gold-2), var(--gold));
+  }
+  .face.front { transform: translateZ(0); }
+  .face.side {
+    transform: rotateY(90deg);
+    background:
+      linear-gradient(rgba(0,0,0,.2), rgba(0,0,0,.45)),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.15) 0 2px, transparent 2px 8px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.15) 0 2px, transparent 2px 8px),
+      linear-gradient(135deg, #1a2a6a, #0f1a45);
+  }
+
+  /* ========== Секции ========== */
+  section {
+    padding: 60px 0;
+    position: relative;
+  }
+  .section-head {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .section-head .eyebrow {
+    display: inline-block;
+    font-family: var(--pixel);
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--gold-2);
+    margin-bottom: 10px;
+  }
+  .section-head h2 {
+    font-family: var(--pixel);
+    font-size: clamp(20px, 3vw, 32px);
+    margin: 0 0 12px;
+    line-height: 1.3;
+    color: var(--text);
+  }
+  .section-head p {
+    color: var(--text-dim);
+    max-width: 640px;
+    margin: 0 auto;
+    font-size: 16px;
+  }
+
+  /* ========== О сервере ========== */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .feature {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    transition: transform .2s, border-color .2s, box-shadow .2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .feature:hover {
+    transform: translateY(-4px);
+    border-color: var(--gold);
+    box-shadow: var(--shadow);
+  }
+  .feature::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 60%, rgba(161, 122, 31, .08));
+    pointer-events: none;
+  }
+  .feature-icon {
+    width: 52px; height: 52px;
+    border-radius: 8px;
+    display: grid; place-items: center;
+    font-size: 24px;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 40%, transparent), color-mix(in srgb, var(--gold) 30%, transparent));
+    border: 2px solid var(--border);
+    image-rendering: pixelated;
+  }
+  .feature h3 {
+    margin: 0 0 8px;
+    font-family: var(--pixel);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .feature p {
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 14.5px;
+  }
+
+  .modes {
+    margin-top: 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .mode {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .mode::after {
+    content: "";
+    position: absolute;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    filter: blur(40px);
+    right: -40px; top: -40px;
+    opacity: .35;
+  }
+  .mode.aas::after { background: var(--accent-2); }
+  .mode.raas::after { background: var(--gold-2); }
+  .mode .badge {
+    display: inline-block;
+    font-family: var(--pixel);
+    font-size: 10px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+  }
+  .mode.aas .badge { background: color-mix(in srgb, var(--accent) 25%, transparent); border: 1px solid var(--accent); color: var(--accent-2); }
+  .mode.raas .badge { background: color-mix(in srgb, var(--gold) 28%, transparent); border: 1px solid var(--gold); color: var(--gold-2); }
+  .mode h3 {
+    margin: 0 0 10px;
+    font-family: var(--pixel);
+    font-size: 16px;
+  }
+  .mode p { margin: 0 0 14px; color: var(--text-dim); }
+  .mode ul {
+    margin: 0; padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+  .mode ul li {
+    padding-left: 24px;
+    position: relative;
+    color: var(--text);
+    font-size: 14.5px;
+  }
+  .mode ul li::before {
+    content: "■";
+    position: absolute;
+    left: 0; top: 0;
+    color: var(--accent-2);
+    font-size: 10px;
+    line-height: 1.8;
+  }
+  .mode.raas ul li::before { color: var(--gold-2); }
+
+  /* ========== Галерея ========== */
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .shot {
+    aspect-ratio: 16 / 10;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    position: relative;
+    transition: transform .2s, border-color .2s;
+    background: var(--surface-2);
+  }
+  .shot:hover { transform: translateY(-3px); border-color: var(--gold); }
+  .shot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .4s ease;
+  }
+  .shot:hover img { transform: scale(1.04); }
+  .shot-caption {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 10px 14px;
+    background: linear-gradient(180deg, transparent, rgba(0,0,0,.75));
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+    transform: translateY(30%);
+    opacity: 0;
+    transition: transform .2s, opacity .2s;
+  }
+  .shot:hover .shot-caption { transform: translateY(0); opacity: 1; }
+
+  .shot.wide { grid-column: span 2; }
+
+  /* Модалка галереи */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(6, 9, 18, .92);
+    display: none;
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(6px);
+  }
+  .lightbox.open { display: flex; }
+  .lightbox img {
+    max-width: 92vw;
+    max-height: 88vh;
+    border-radius: 8px;
+    border: 2px solid var(--gold);
+    box-shadow: 0 20px 60px rgba(0,0,0,.7);
+  }
+  .lb-close, .lb-prev, .lb-next {
+    position: absolute;
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px solid var(--gold);
+    color: var(--text);
+    cursor: pointer;
+    display: grid; place-items: center;
+    font-size: 18px;
+    font-weight: 900;
+    z-index: 101;
+    transition: background .2s;
+  }
+  .lb-close:hover, .lb-prev:hover, .lb-next:hover { background: var(--gold); color: #1a1204; }
+  .lb-close { top: 20px; right: 20px; }
+  .lb-prev { left: 20px; top: 50%; transform: translateY(-50%); }
+  .lb-next { right: 20px; top: 50%; transform: translateY(-50%); }
+
+  /* ========== CTA привилегии ========== */
+  .cta {
+    margin: 40px 0;
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--accent) 22%, transparent), color-mix(in srgb, var(--gold) 20%, transparent)),
+      var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 18px;
+    padding: 40px 30px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta::before, .cta::after {
+    content: "";
+    position: absolute;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: .3;
+  }
+  .cta::before { background: var(--accent-2); left: -60px; top: -60px; }
+  .cta::after { background: var(--gold-2); right: -60px; bottom: -60px; }
+  .cta h2 {
+    font-family: var(--pixel);
+    font-size: clamp(18px, 2.5vw, 26px);
+    margin: 0 0 10px;
+  }
+  .cta p {
+    color: var(--text-dim);
+    max-width: 600px;
+    margin: 0 auto 22px;
+  }
+
+  /* ========== Соцсети ========== */
+  .socials {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .social {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 20px;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    transition: transform .2s, border-color .2s, background .2s;
+  }
+  .social:hover { transform: translateY(-3px); }
+  .social.discord:hover { border-color: #5865F2; }
+  .social.telegram:hover { border-color: #2AABEE; }
+  .social-icon {
+    width: 50px; height: 50px;
+    border-radius: 10px;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    font-size: 24px;
+    color: #fff;
+  }
+  .social.discord .social-icon { background: linear-gradient(135deg, #5865F2, #404EED); }
+  .social.telegram .social-icon { background: linear-gradient(135deg, #2AABEE, #229ED9); }
+  .social-body { flex: 1; min-width: 0; }
+  .social-body strong {
+    display: block;
+    font-family: var(--pixel);
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+  .social-body span {
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+  .social .arrow {
+    font-size: 22px;
+    color: var(--text-dim);
+    transition: transform .2s, color .2s;
+  }
+  .social:hover .arrow { transform: translateX(4px); color: var(--gold-2); }
+
+  /* ========== Футер ========== */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 30px 0;
+    margin-top: 40px;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+  .footer-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .footer-inner a { color: var(--gold-2); font-weight: 700; }
+
+  /* Тост */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--success);
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+    box-shadow: var(--shadow);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s, transform .25s;
+    z-index: 200;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ========== Адаптив ========== */
+  @media (max-width: 960px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 30px; }
+    .hero-art { margin: 0 auto; max-width: 360px; }
+    .features { grid-template-columns: repeat(2, 1fr); }
+    .gallery { grid-template-columns: repeat(2, 1fr); }
+    .shot.wide { grid-column: span 2; }
+    .modes { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 720px) {
+    .nav-links { display: none; }
+    .burger { display: grid; }
+    .mobile-nav { display: none; }
+    .mobile-nav.open {
+      display: flex;
+    }
+    .mobile-nav a {
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-weight: 700;
+    }
+    .mobile-nav {
+      position: absolute;
+      top: 100%; left: 0; right: 0;
+      background: var(--bg-2);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px 20px;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .hero { padding: 50px 0 30px; }
+    section { padding: 40px 0; }
+    .features { grid-template-columns: 1fr; }
+    .gallery { grid-template-columns: 1fr; }
+    .shot.wide { grid-column: auto; }
+    .socials { grid-template-columns: 1fr; }
+    .stats { gap: 20px; }
+    .stat .num { font-size: 18px; }
+    .cta { padding: 28px 20px; }
+  }
+  @media (max-width: 480px) {
+    .btn { padding: 11px 16px; font-size: 14px; }
+    .brand { font-size: 11px; }
+    .brand-logo { width: 36px; height: 36px; font-size: 16px; }
+    .lb-prev { left: 10px; }
+    .lb-next { right: 10px; }
+  }
+</style>
+</head>
+<body data-theme="dark">
+
+<!-- Шапка -->
+<header class="header">
+  <div class="container nav">
+    <a href="#top" class="brand" aria-label="SVO Craft">
+      <div class="brand-logo" aria-hidden="true">S</div>
+      <div class="brand-name">
+        SVO CRAFT
+        <small>Minecraft · War Server</small>
+      </div>
+    </a>
+
+    <nav class="nav-links" aria-label="Основное меню">
+      <a href="#about">О сервере</a>
+      <a href="#gallery">Скриншоты</a>
+      <a href="#shop">Привилегии</a>
+      <a href="#socials">Контакты</a>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему" title="Сменить тему">
+        <svg id="iconSun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg id="iconMoon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+
+      <button class="theme-toggle burger" id="burger" aria-label="Меню" title="Меню">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+
+      <a href="#howto" class="btn btn-primary">Играть</a>
+    </div>
+
+    <div class="mobile-nav" id="mobileNav" aria-label="Мобильное меню">
+      <a href="#about">О сервере</a>
+      <a href="#gallery">Скриншоты</a>
+      <a href="#shop">Привилегии</a>
+      <a href="#socials">Контакты</a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <span class="tag"><span class="dot"></span> Сервер онлайн · Версия 1.20.1</span>
+      <h1 class="title">
+        SVO <span class="accent-blue">CRAFT</span><br/>
+        <span class="accent-gold">Мир большой войны</span>
+      </h1>
+      <p class="lead">
+        Minecraft-сервер в стиле военного конфликта. Строй крепости, командуй армией, захватывай территории
+        и сражайся в режимах <b>AAS</b> и <b>RAAS</b>. Тактика, дисциплина и верность команде решают всё.
+      </p>
+      <div class="hero-buttons">
+        <a href="#howto" class="btn btn-primary">▶ Начать играть</a>
+        <a href="#shop" class="btn btn-gold">★ Купить привилегии</a>
+      </div>
+      <div class="stats">
+        <div class="stat"><span class="num">250+</span><span class="label">макс. онлайн</span></div>
+        <div class="stat"><span class="num">24/7</span><span class="label">аптайм</span></div>
+        <div class="stat"><span class="num">1.20.1</span><span class="label">версия Java</span></div>
+        <div class="stat"><span class="num">PvP/PvE</span><span class="label">режимы</span></div>
+      </div>
+    </div>
+
+    <div class="hero-art" aria-hidden="true">
+      <div class="mc-cube">
+        <div class="face top"></div>
+        <div class="face front"></div>
+        <div class="face side"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- IP / Как подключиться -->
+<section id="howto">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Подключение</span>
+      <h2>Как начать играть</h2>
+      <p>Запусти Minecraft Java Edition 1.20.1, нажми «Сетевая игра» → «Добавить сервер» и введи IP ниже.</p>
+    </div>
+
+    <div style="max-width:720px;margin:0 auto;">
+      <div class="ip-card">
+        <div class="ip-label">
+          <span>IP-адрес сервера</span>
+          <span>версия 1.20.1</span>
+        </div>
+        <div class="ip-value">
+          <span id="ipText">скоро будет объявлен</span>
+          <button class="ip-copy" id="ipCopy" title="Копировать">Копировать</button>
+        </div>
+        <div class="ip-note">
+          ℹ️ IP сервера будет опубликован в наших соцсетях <b>Discord</b> и <b>Telegram</b>, следите за новостями.
+        </div>
+        <div class="chips">
+          <span class="chip">Java 1.20.1</span>
+          <span class="chip gold">No Premium Required</span>
+          <span class="chip">AAS · RAAS</span>
+          <span class="chip gold">AntiCheat</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- О сервере -->
+<section id="about">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">О проекте</span>
+      <h2>Сервер для настоящих бойцов</h2>
+      <p>Погрузись в атмосферу масштабных военных операций, построенной прямо в мире Minecraft.</p>
+    </div>
+
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">⚔️</div>
+        <h3>Реалистичные бои</h3>
+        <p>Тактическое оружие, гранаты, артиллерия и поддержка с воздуха. Каждый бой похож на настоящую операцию.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🏰</div>
+        <h3>Строй и укрепляй</h3>
+        <p>Создавай базы, рыть траншеи, ставь турели и доты. Захватывай точки и удерживай линии фронта.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🎖️</div>
+        <h3>Звания и прогрессия</h3>
+        <p>Система рангов, медалей и наград за заслуги на поле боя. Лучшие попадают в доску почёта.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🪖</div>
+        <h3>Отряды и командиры</h3>
+        <p>Играй в составе настоящих подразделений. Выбирай роли: стрелок, медик, инженер, снайпер, танкист.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🗺️</div>
+        <h3>Большие карты</h3>
+        <p>Разработанные локации: города, леса, пустоши, горные перевалы. Каждая карта — своя тактика.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🛡️</div>
+        <h3>Анти-чит и стабильность</h3>
+        <p>Современный античит, регулярные бэкапы, отзывчивая администрация и стабильный UPTIME 24/7.</p>
+      </div>
+    </div>
+
+    <!-- Режимы AAS / RAAS -->
+    <div class="section-head" style="margin-top:60px;">
+      <span class="eyebrow">Режимы</span>
+      <h2>AAS и RAAS — как играть</h2>
+      <p>Два режима захвата территории с уникальной механикой и тактикой.</p>
+    </div>
+
+    <div class="modes">
+      <div class="mode aas">
+        <span class="badge">AAS</span>
+        <h3>Advance and Secure</h3>
+        <p>Линейный захват точек: команда продвигается вперёд, захватывая флаги по очереди.</p>
+        <ul>
+          <li>Последовательный захват зон A→B→C</li>
+          <li>Оборона последней точки = победа</li>
+          <li>Подходит новичкам и тренировкам</li>
+          <li>Классическая армейская тактика</li>
+        </ul>
+      </div>
+      <div class="mode raas">
+        <span class="badge">RAAS</span>
+        <h3>Randomized Advance and Secure</h3>
+        <p>Рандомные флаги каждый раунд. Никогда не знаешь, какая точка будет следующей.</p>
+        <ul>
+          <li>Разные комбинации флагов</li>
+          <li>Сложнее: нужна разведка и связь</li>
+          <li>Для опытных командиров</li>
+          <li>Непредсказуемость = решающий фактор</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Галерея -->
+<section id="gallery">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Галерея</span>
+      <h2>Снимки с поля боя</h2>
+      <p>Фото из игр игроков, строительства и масштабных сражений.</p>
+    </div>
+
+    <div class="gallery" id="galleryGrid">
+      <!-- placeholder image API для Minecraft/war тематики -->
+      <a class="shot wide" data-index="0">
+        <img src="https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=Minecraft%20military%20base%20trenches%20tank%20night%20combat%20dark%20aesthetic&image_size=landscape_16_9" alt="Военная база" />
+        <div class="shot-caption">🏰 Военная база и линии обороны</div>
+      </a>
+      <a class="shot" data-index="1">
+        <img src="https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=Minecraft%20battlefield%20explosions%20soldiers%20fog%20of%20war&image_size=landscape_16_9" alt="Поле боя" />
+        <div class="shot-caption">💥 Масштабная перестрелка</div>
+      </a>
+      <a class="shot" data-index="2">
+        <img src="https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=Minecraft%20city%20warfare%20ruins%20sniper%20tower%20sunset&image_size=landscape_16_9" alt="Городские бои" />
+        <div class="shot-caption">🏙️ Городские бои</div>
+      </a>
+      <a class="shot wide" data-index="3">
+        <img src="https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=Minecraft%20army%20parade%20troops%20formations%20flags%20aerial%20view&image_size=landscape_16_9" alt="Парад войск" />
+        <div class="shot-caption">🪖 Строй батальона перед операцией</div>
+      </a>
+      <a class="shot" data-index="4">
+        <img src="https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=Minecraft%20forest%20ambush%20camouflage%20special%20forces&image_size=landscape_16_9" alt="Засада" />
+        <div class="shot-caption">🌲 Спецназ в лесу</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Привилегии -->
+<section id="shop">
+  <div class="container">
+    <div class="cta">
+      <h2>★ Поддержите проект — получите преимущество ★</h2>
+      <p>Приобретая привилегии, вы помогаете развивать SVO Craft, запускать ивенты и поддерживать сервер 24/7.
+        Доступны наборы «Рядовой», «Сержант», «Лейтенант», «Капитан» и «Генерал».</p>
+      <div class="hero-buttons" style="justify-content:center;">
+        <a href="#" class="btn btn-gold" onclick="alert('Магазин привилегий скоро откроется. Заглядывайте в Discord/Telegram.');return false;">
+          🛒 Перейти в магазин
+        </a>
+        <a href="#socials" class="btn btn-ghost">Сообщить о покупке в Discord</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Соцсети -->
+<section id="socials">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Сообщество</span>
+      <h2>Присоединяйся к команде</h2>
+      <p>Общайся, ищи отряд, узнавай первым об ивентах и получай актуальный IP сервера.</p>
+    </div>
+
+    <div class="socials">
+      <a class="social discord" href="https://discord.com" target="_blank" rel="noopener">
+        <div class="social-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+        </div>
+        <div class="social-body">
+          <strong>DISCORD</strong>
+          <span>Основное общение, отряды, поддержка, ивенты</span>
+        </div>
+        <span class="arrow">→</span>
+      </a>
+
+      <a class="social telegram" href="https://t.me" target="_blank" rel="noopener">
+        <div class="social-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
+        </div>
+        <div class="social-body">
+          <strong>TELEGRAM</strong>
+          <span>Новости, розыгрыши, актуальный IP сервера</span>
+        </div>
+        <span class="arrow">→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="container footer-inner">
+    <div>© <span id="year"></span> SVO Craft · Minecraft сервер про войну</div>
+    <div>Версия <b>1.20.1</b> · Режимы <a href="#about">AAS · RAAS</a></div>
+  </div>
+</footer>
+
+<!-- Лайтбокс галереи -->
+<div class="lightbox" id="lightbox" aria-hidden="true">
+  <button class="lb-close" id="lbClose" aria-label="Закрыть">×</button>
+  <button class="lb-prev" id="lbPrev" aria-label="Предыдущее">‹</button>
+  <button class="lb-next" id="lbNext" aria-label="Следующее">›</button>
+  <img id="lbImg" alt="" />
+</div>
+
+<div class="toast" id="toast">IP скопирован!</div>
+
+<script>
+  // ======= Тема =======
+  const body = document.body;
+  const themeBtn = document.getElementById('themeToggle');
+  const iconSun = document.getElementById('iconSun');
+  const iconMoon = document.getElementById('iconMoon');
+
+  function applyTheme(t) {
+    body.setAttribute('data-theme', t);
+    if (t === 'light') {
+      iconSun.style.display = 'block';
+      iconMoon.style.display = 'none';
+    } else {
+      iconSun.style.display = 'none';
+      iconMoon.style.display = 'block';
+    }
+    try { localStorage.setItem('svocraft-theme', t); } catch(e){}
+  }
+
+  let saved = 'dark';
+  try { saved = localStorage.getItem('svocraft-theme') || 'dark'; } catch(e){}
+  applyTheme(saved);
+
+  themeBtn.addEventListener('click', () => {
+    const cur = body.getAttribute('data-theme') || 'dark';
+    applyTheme(cur === 'dark' ? 'light' : 'dark');
+  });
+
+  // ======= Бургер-меню =======
+  const burger = document.getElementById('burger');
+  const mobileNav = document.getElementById('mobileNav');
+  function setMobileNav(open) {
+    mobileNav.classList.toggle('open', open);
+    mobileNav.setAttribute('aria-hidden', String(!open));
+  }
+  burger.addEventListener('click', () => {
+    setMobileNav(!mobileNav.classList.contains('open'));
+  });
+  mobileNav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+    setMobileNav(false);
+  }));
+
+  // ======= Год в футере =======
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // ======= Копирование IP =======
+  const ipText = document.getElementById('ipText');
+  const ipCopy = document.getElementById('ipCopy');
+  const toast = document.getElementById('toast');
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+
+  ipCopy.addEventListener('click', async () => {
+    const text = ipText.textContent.trim();
+    if (text === 'скоро будет объявлен') {
+      showToast('IP ещё не опубликован!');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast('IP скопирован!');
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); ta.remove();
+      showToast('IP скопирован!');
+    }
+  });
+
+  // ======= Лайтбокс галереи =======
+  const shots = [...document.querySelectorAll('.shot')];
+  const lightbox = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lbImg');
+  const lbClose = document.getElementById('lbClose');
+  const lbPrev = document.getElementById('lbPrev');
+  const lbNext = document.getElementById('lbNext');
+  let currentIdx = 0;
+
+  function openLB(i) {
+    currentIdx = i;
+    const img = shots[i].querySelector('img');
+    lbImg.src = img.src;
+    lbImg.alt = img.alt;
+    lightbox.classList.add('open');
+    lightbox.setAttribute('aria-hidden', 'false');
+  }
+  function closeLB() {
+    lightbox.classList.remove('open');
+    lightbox.setAttribute('aria-hidden', 'true');
+  }
+  function shift(d) {
+    currentIdx = (currentIdx + d + shots.length) % shots.length;
+    const img = shots[currentIdx].querySelector('img');
+    lbImg.src = img.src;
+    lbImg.alt = img.alt;
+  }
+
+  shots.forEach((s, i) => s.addEventListener('click', (e) => {
+    e.preventDefault();
+    openLB(i);
+  }));
+  lbClose.addEventListener('click', closeLB);
+  lbPrev.addEventListener('click', () => shift(-1));
+  lbNext.addEventListener('click', () => shift(1));
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLB();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (!lightbox.classList.contains('open')) return;
+    if (e.key === 'Escape') closeLB();
+    if (e.key === 'ArrowLeft') shift(-1);
+    if (e.key === 'ArrowRight') shift(1);
+  });
+
+  // ======= Плавный скролл =======
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', function(e) {
+      const id = this.getAttribute('href');
+      if (!id || id === '#') return;
+      const el = document.querySelector(id);
+      if (el) {
+        e.preventDefault();
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+</script>
+</body>
+</html>
